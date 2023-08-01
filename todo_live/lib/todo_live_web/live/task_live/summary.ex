@@ -31,6 +31,7 @@ defmodule TodoLiveWeb.TaskLive.Summary do
       <a>
         <div><%= task.title %></div>
         <div><%= task.date %></div>
+        <div phx-click="delete_task" phx-value-task_id={task.id}> Delete </div>
       </a>
     </div>
     """
@@ -45,16 +46,27 @@ defmodule TodoLiveWeb.TaskLive.Summary do
     {:ok, socket}
   end
 
-  def handle_event("delete_task", &{"task_id" => task_id}, socket) do
+  def handle_event("delete_task", %{"task_id" => task_id}, socket) do
     socket =
       case Tasks.delete_task(Tasks.get_task!(task_id)) do
-        {:ok, _article} ->
-          assign_article_when_deleted(socket, socket.assigns.live_action)
+        {:ok, _task} ->
+          assign_task_when_deleted(socket, socket.assigns.live_action)
 
         {:error, _cs} ->
           put_flash(socket, :error, "Could not delete task.")
       end
+
     {:noreply, socket}
+  end
+
+  defp assign_task_when_deleted(socket, :info) do
+    tasks = Tasks.list_tasks()
+
+    #Tasks.list_tasks_for_account(socket.assigns.account.id, socket.assigns.current_account.id)
+
+    socket
+    |> assign(:tasks, tasks)
+    |> put_flash(:info, "Task deleted successfully.")
   end
 
   # def handle_event("save", %{"task" => task_params}, socket) do
