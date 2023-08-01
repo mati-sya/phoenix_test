@@ -39,7 +39,7 @@ defmodule TodoLiveWeb.TaskLive.Summary do
       <a>
         <form phx-change="uncomplete_task">
           <input type="checkbox" checked>
-          <input type="hidden" name="task-id" value={task.id}>
+          <input type="hidden" name="task_id" value={task.id}>
         </form>
         <div><%= task.title %></div>
         <div><%= task.date %></div>
@@ -69,13 +69,6 @@ defmodule TodoLiveWeb.TaskLive.Summary do
       end
 
     {:noreply, socket}
-  end
-
-  defp assign_task_when_deleted(socket, :info) do
-    tasks = Tasks.list_tasks_by_account_id(socket.assigns.current_account.id)
-    socket
-    |> assign(:tasks, tasks)
-    |> put_flash(:info, "Task deleted successfully.")
   end
 
   def handle_event("complete_task", %{"task_id" => task_id}, socket) do
@@ -110,5 +103,11 @@ defmodule TodoLiveWeb.TaskLive.Summary do
     {:noreply, socket}
   end
 
+  defp assign_task_when_deleted(socket, :summary) do
+    tasks = Tasks.list_tasks_by_account_id(socket.assigns.current_account.id)
+    socket
+    |> assign(:tasks, tasks)
+    |> put_flash(:info, "Task deleted successfully.")
+  end
   #
 end
