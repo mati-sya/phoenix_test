@@ -11,7 +11,7 @@ defmodule TodoLiveWeb.TaskLive.Summary do
     <hr>
 
     <h2 class="text-xl mt-4">
-      New Task
+      New Todo
     </h2>
     <hr>
 
@@ -20,15 +20,15 @@ defmodule TodoLiveWeb.TaskLive.Summary do
     </h2>
     <hr>
     <div :for={task <- @tasks} class="mt-2" :if={task.completed == false}>
-      <a>
+      <div class="flex justify-between py-2 border-b last:border-b-0">
         <form phx-change="complete_task">
           <input type="checkbox">
           <input type="hidden" name="task_id" value={task.id}>
         </form>
         <div><%= task.title %></div>
         <div><%= task.date %></div>
-        <div phx-click="delete_task" phx-value-task_id={task.id}> Delete </div>
-      </a>
+        <div phx-click="delete_task" phx-value-task_id={task.id} class="hover:underline"> Delete </div>
+      </div>
     </div>
 
     <h2 class="text-xl mt-4">
@@ -36,15 +36,15 @@ defmodule TodoLiveWeb.TaskLive.Summary do
     </h2>
     <hr>
     <div :for={task <- @tasks} class="mt-2" :if={task.completed == true}>
-      <a>
+      <div class="flex justify-between py-2 border-b last:border-b-0">
         <form phx-change="uncomplete_task">
           <input type="checkbox" checked>
           <input type="hidden" name="task-id" value={task.id}>
         </form>
         <div><%= task.title %></div>
         <div><%= task.date %></div>
-        <div phx-click="delete_task" phx-value-task_id={task.id}> Delete </div>
-      </a>
+        <div phx-click="delete_task" phx-value-task_id={task.id} class="hover:underline"> Delete </div>
+      </div>
     </div>
     """
   end
@@ -73,6 +73,7 @@ defmodule TodoLiveWeb.TaskLive.Summary do
 
   defp assign_task_when_deleted(socket, :info) do
     tasks = Tasks.list_tasks_by_account_id(socket.assigns.current_account.id)
+
     socket
     |> assign(:tasks, tasks)
     |> put_flash(:info, "Task deleted successfully.")
@@ -80,10 +81,12 @@ defmodule TodoLiveWeb.TaskLive.Summary do
 
   def handle_event("complete_task", %{"task_id" => task_id}, socket) do
     task = Tasks.get_task!(task_id)
+
     socket =
       case Tasks.update_task(task, %{completed: true}) do
         {:ok, _task} ->
           tasks = Tasks.list_tasks_by_account_id(socket.assigns.current_account.id)
+
           socket
           |> assign(:tasks, tasks)
           |> put_flash(:info, "Task updated successfully.")
@@ -91,15 +94,18 @@ defmodule TodoLiveWeb.TaskLive.Summary do
         {:error, _cs} ->
           put_flash(socket, :error, "Could not update task.")
       end
+
     {:noreply, socket}
   end
 
   def handle_event("uncomplete_task", %{"task_id" => task_id}, socket) do
     task = Tasks.get_task!(task_id)
+
     socket =
       case Tasks.update_task(task, %{completed: false}) do
         {:ok, _task} ->
           tasks = Tasks.list_tasks_by_account_id(socket.assigns.current_account.id)
+
           socket
           |> assign(:tasks, tasks)
           |> put_flash(:info, "Task updated successfully.")
@@ -107,7 +113,20 @@ defmodule TodoLiveWeb.TaskLive.Summary do
         {:error, _cs} ->
           put_flash(socket, :error, "Could not update task.")
       end
+
     {:noreply, socket}
+  end
+
+  # Form
+
+  # <.form for={@form} phx-change="validate" phx-submit="save">
+  # <.input type="text" field={@form[:username]} />
+  # <.input type="email" field={@form[:email]} />
+  # <button>Add Task</button>
+  # </.form>
+
+  defp assign_form(socket, cs) do
+    assign(socket, :form, to_form(cs))
   end
 
   #
