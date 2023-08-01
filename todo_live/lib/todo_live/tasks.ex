@@ -21,6 +21,16 @@ defmodule TodoLive.Tasks do
     Repo.all(Task)
   end
 
+  def list_tasks_by_account_id(account_id) do
+    query =
+      from(
+        t in Task,
+        where: t.account_id == ^account_id
+      )
+
+    Repo.all(query)
+  end
+
   @doc """
   Gets a single task.
 

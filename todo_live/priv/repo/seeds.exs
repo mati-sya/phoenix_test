@@ -47,3 +47,9 @@ Tasks.create_task(%{
   completed: true,
   date: NaiveDateTime.truncate(NaiveDateTime.utc_now(), :second)
 })
+
+Tasks.create_task(%{
+  title: "掃除",
+  account_id: 1,
+  date: NaiveDateTime.truncate(NaiveDateTime.utc_now(), :second)
+})
