@@ -68,6 +68,9 @@ defmodule TodoLiveWeb.Router do
       on_mount: [{TodoLiveWeb.AccountAuth, :ensure_authenticated}] do
       live "/accounts/settings", AccountSettingsLive, :edit
       live "/accounts/settings/confirm_email/:token", AccountSettingsLive, :confirm_email
+
+      # タスク一覧
+      live "/tasks", TaskLive.Summary, :summary
     end
   end
 
