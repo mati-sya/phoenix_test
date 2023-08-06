@@ -2,6 +2,7 @@ defmodule TodoLiveWeb.TaskLive.Summary do
   use TodoLiveWeb, :live_view
 
   alias TodoLive.Tasks
+  alias TodoLive.Tasks.Task
 
   def render(assigns) do
     ~H"""
@@ -14,6 +15,18 @@ defmodule TodoLiveWeb.TaskLive.Summary do
       New Task
     </h2>
     <hr>
+    <.simple_form
+      for={@form}
+      phx-change="validate_task"
+      phx-submit="save_task"
+      class="border rounded-lg px-4 py-2"
+    >
+      <.input field={@form[:title]} type="text" label="Title" />
+      <.input field={@form[:date]} type="date" label="Date" />
+      <:actions>
+        <.button phx-disabled-with="Adding...">Add Task</.button>
+      </:actions>
+    </.simple_form>
 
     <h2 class="text-xl mt-4">
       In progress or prior to start
@@ -53,6 +66,7 @@ defmodule TodoLiveWeb.TaskLive.Summary do
     socket =
       socket
       |> assign(:tasks, Tasks.list_tasks_by_account_id(socket.assigns.current_account.id))
+      |> assign_form(Tasks.change_task(%Task{}))
       |> assign(:page_title, "Todo")
 
     {:ok, socket}
@@ -108,6 +122,32 @@ defmodule TodoLiveWeb.TaskLive.Summary do
     socket
     |> assign(:tasks, tasks)
     |> put_flash(:info, "Task deleted successfully.")
+  end
+
+  # FORM
+  def handle_event("validate_task", %{"task" => params}, socket) do
+    {:noreply, assign_form(socket, Tasks.change_task(%Task{}, params))}
+  end
+
+  def handle_event("save_task", %{"task" => params}, socket) do
+    params = Map.merge(params, %{"account_id" => socket.assigns.current_account.id})
+    socket =
+      case Tasks.create_task(params) do
+        {:ok, _task} ->
+          socket
+          |> put_flash(:info, "Created task successfully.")
+          |> assign(:tasks, Tasks.list_tasks_by_account_id(socket.assigns.current_account.id))
+          |> assign_form(Tasks.change_task(%Task{}))
+
+        {:error, cs} ->
+          assign_form(socket, cs)
+      end
+
+    {:noreply, socket}
+  end
+
+  defp assign_form(socket, cs) do
+    assign(socket, :form, to_form(cs))
   end
   #
 end
